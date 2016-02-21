@@ -1,0 +1,6 @@
+﻿{
+    "KasUser": "w0123456",
+    "KasPassword": "hunter2",
+    "SessionLifeTime": 1800,
+    "SessionUpdateLifeTime": "Y"
+}
