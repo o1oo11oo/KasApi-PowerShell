@@ -13,7 +13,7 @@
 
         # parameter set, see http://kasapi.kasserver.com/dokumentation/phpdoc/packages/API%20Funktionen.html for possible values
         [Parameter(Position=2,Mandatory=$false)]
-        [object]$Params=@{},
+        [object]$ApiParams=@{},
 
         # Lifetime of the session in seconds
         [Parameter(Position=3,Mandatory=$false)]
@@ -43,8 +43,7 @@
     Try {
         $CredentialToken = $KasAuthProxy.KasAuth($(ConvertTo-Json -InputObject $AuthRequest -Compress))
     } Catch {
-        Write-Host $_.Exception.Message
-        Break
+        Throw $_.Exception.Message
     }
 
     $ApiRequest = New-Object PSObject
@@ -57,8 +56,7 @@
     Try {
         $ApiResponse = $KasApiProxy.KasApi($(ConvertTo-Json -InputObject $ApiRequest -Compress))
     } Catch {
-        Write-Host $_.Exception.Message
-        Break
+        Throw $_.Exception.Message
     }
 
     $ReturnObject = New-Object -TypeName PSObject
