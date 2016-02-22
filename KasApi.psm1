@@ -70,18 +70,18 @@ function Format-KasApiResponseAsObject($Map) {
     $Map.ChildNodes.ForEach({
         $Child = $_
         switch ($Child.value.type) {
-            "xsd:string" {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([string]$Child.value.InnerText)            -MemberType NoteProperty; break}
-            "xsd:int"    {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([int]$Child.value.InnerText)               -MemberType NoteProperty; break}
-            "xsd:float"  {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([float]$Child.value.InnerText)             -MemberType NoteProperty; break}
-            "ns2:Map"    {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $(Format-KasApiResponseAsObject -Map $Child.value) -MemberType NoteProperty; break}
+            "xsd:string" {$Object | Add-Member -Name $Child.key.InnerText -Value $([string]$Child.value.InnerText)                  -MemberType NoteProperty; break}
+            "xsd:int"    {$Object | Add-Member -Name $Child.key.InnerText -Value $([int]$Child.value.InnerText)                     -MemberType NoteProperty; break}
+            "xsd:float"  {$Object | Add-Member -Name $Child.key.InnerText -Value $([float]$Child.value.InnerText)                   -MemberType NoteProperty; break}
+            "ns2:Map"    {$Object | Add-Member -Name $Child.key.InnerText -Value $(Format-KasApiResponseAsObject -Map $Child.value) -MemberType NoteProperty; break}
             "SOAP-ENC:Array" {
                 $Array = @()
                 $Child.value.ChildNodes.ForEach({
                     $Array += $(Format-KasApiResponseAsObject -Map $_)
                 })
-                $Object | Add-Member -Name $Child.key.FirstChild.Value -Value $Array -MemberType NoteProperty
+                $Object | Add-Member -Name $Child.key.InnerText -Value $Array -MemberType NoteProperty
             }
-            default {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([bool]$Child.value.nil) -MemberType NoteProperty}
+            default {$Object | Add-Member -Name $Child.key.InnerText -Value $([bool]$Child.value.nil) -MemberType NoteProperty}
         }
     })
     Return $Object
