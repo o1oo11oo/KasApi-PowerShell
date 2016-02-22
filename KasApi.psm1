@@ -1,26 +1,4 @@
-﻿function Format-KasApiResponseAsObject($Map) {
-    $Object = New-Object -TypeName PSObject
-    $Map.ChildNodes.ForEach({
-        $Child = $_
-        switch ($Child.value.type) {
-            "xsd:string" {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([string]$Child.value.InnerText)            -MemberType NoteProperty; break}
-            "xsd:int"    {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([int]$Child.value.InnerText)               -MemberType NoteProperty; break}
-            "xsd:float"  {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([float]$Child.value.InnerText)             -MemberType NoteProperty; break}
-            "ns2:Map"    {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $(Format-KasApiResponseAsObject -Map $Child.value) -MemberType NoteProperty; break}
-            "SOAP-ENC:Array" {
-                $Array = @()
-                $Child.value.ChildNodes.ForEach({
-                    $Array += $(Format-KasApiResponseAsObject -Map $_)
-                })
-                $Object | Add-Member -Name $Child.key.FirstChild.Value -Value $Array -MemberType NoteProperty
-            }
-            default {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([bool]$Child.value.nil) -MemberType NoteProperty}
-        }
-    })
-    Return $Object
-}
-
-function Invoke-KasApiRequest {
+﻿function Invoke-KasApiRequest {
     [CmdletBinding()]
     [OutputType([Object])]
     Param
@@ -87,6 +65,28 @@ function Invoke-KasApiRequest {
     $ReturnObject | Add-Member -Name $ApiResponse[1].key.FirstChild.Value -Value $(Format-KasApiResponseAsObject -Map $ApiResponse[1].value) -MemberType NoteProperty
     $ReturnObject | Add-Member -Name $ApiResponse[2].key.FirstChild.Value -Value $(Format-KasApiResponseAsObject -Map $ApiResponse[2].value) -MemberType NoteProperty
     Return $ReturnObject
+}
+
+function Format-KasApiResponseAsObject($Map) {
+    $Object = New-Object -TypeName PSObject
+    $Map.ChildNodes.ForEach({
+        $Child = $_
+        switch ($Child.value.type) {
+            "xsd:string" {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([string]$Child.value.InnerText)            -MemberType NoteProperty; break}
+            "xsd:int"    {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([int]$Child.value.InnerText)               -MemberType NoteProperty; break}
+            "xsd:float"  {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([float]$Child.value.InnerText)             -MemberType NoteProperty; break}
+            "ns2:Map"    {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $(Format-KasApiResponseAsObject -Map $Child.value) -MemberType NoteProperty; break}
+            "SOAP-ENC:Array" {
+                $Array = @()
+                $Child.value.ChildNodes.ForEach({
+                    $Array += $(Format-KasApiResponseAsObject -Map $_)
+                })
+                $Object | Add-Member -Name $Child.key.FirstChild.Value -Value $Array -MemberType NoteProperty
+            }
+            default {$Object | Add-Member -Name $Child.key.FirstChild.Value -Value $([bool]$Child.value.nil) -MemberType NoteProperty}
+        }
+    })
+    Return $Object
 }
 
 Export-ModuleMember -function Invoke-KasApiRequest
