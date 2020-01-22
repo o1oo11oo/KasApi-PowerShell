@@ -1,4 +1,6 @@
-﻿function Invoke-KasApiRequest {
+$NextRequestTime = Get-Date
+
+function Invoke-KasApiRequest {
     [CmdletBinding()]
     [OutputType([Object])]
     Param
@@ -31,7 +33,12 @@
     $KasAuthProxy = New-WebServiceProxy -Uri $kasauthurl
     $KasApiProxy = New-WebServiceProxy -Uri $kasapiurl
     $KasAuthProxy.Url = $KasAuthProxy.Url.Replace("http://", "https://")
-    $KasAuthProxy.Url = $KasAuthProxy.Url.Replace("http://", "https://")
+    $KasApiProxy.Url = $KasApiProxy.Url.Replace("http://", "https://")
+
+    # wait for KasFloodDelay
+    while ((Get-Date) -le $script:NextRequestTime) {
+        Start-Sleep -Milliseconds 50
+    }
 
     $AuthRequest = New-Object PSObject
     $AuthRequest | Add-Member -Name "KasUser" -Value $Credential.UserName -MemberType NoteProperty
@@ -62,6 +69,9 @@
     $ReturnObject = New-Object -TypeName PSObject
     $ReturnObject | Add-Member -Name $ApiResponse[1].key.FirstChild.Value -Value $(Format-KasApiResponseAsObject -Map $ApiResponse[1].value) -MemberType NoteProperty
     $ReturnObject | Add-Member -Name $ApiResponse[2].key.FirstChild.Value -Value $(Format-KasApiResponseAsObject -Map $ApiResponse[2].value) -MemberType NoteProperty
+
+    $script:NextRequestTime = (Get-Date).AddSeconds($test.Response.KasFloodDelay)
+
     Return $ReturnObject
 }
 
